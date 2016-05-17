@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>LDPC check</title>
+<style>
+
+.node.symbol {
+  fill: steelblue;
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.node.check {
+  fill: crimson;
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.link {
+  stroke: #777;
+  stroke-width: 2px;
+}
+
+</style>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="./tanner-graph.js"></script>
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function(){
+    TannerGraph.d3 = window.d3;
+    var graph = new TannerGraph({
+      symbolNodes: [0, 1, 2, 3, 4, 5, 6, 7],
+      checkNodes: [8, 9, 10, 11],
+      links: [[1, 9], [4, 9], [7, 9], [3, 10], [4, 10], [5, 10], [1, 11], [3, 11], [0, 11], [2, 8], [6, 8], [7, 8]]
+    });
+    
+    graph.render();
+  });
+</script>
