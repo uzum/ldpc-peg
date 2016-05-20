@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>LDPC check</title>
+<link rel="stylesheet" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.css">
 <style>
+
+#tanner-graph {
+  width: 600px;
+  height: 400px;
+  border: 1px solid lightgray;
+}
 
 .node.symbol {
   fill: steelblue;
@@ -21,17 +28,36 @@
 }
 
 </style>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="./tanner-graph.js"></script>
-<script type="text/javascript">
-  document.addEventListener("DOMContentLoaded", function(){
-    TannerGraph.d3 = window.d3;
-    var graph = new TannerGraph({
-      symbolNodes: [0, 1, 2, 3, 4, 5, 6, 7],
-      checkNodes: [8, 9, 10, 11],
-      links: [[1, 9], [4, 9], [7, 9], [3, 10], [4, 10], [5, 10], [1, 11], [3, 11], [0, 11], [2, 8], [6, 8], [7, 8]]
+
+<body>
+  <div id="tanner-graph"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js"></script>
+  <script src="./tanner-graph.js"></script>
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function(){
+      TannerGraph.vis = window.vis;
+      var graph = new TannerGraph({
+        checkNodes: [
+          { label: 'C8', id: 8, neighbors: [2, 6, 7, 0] }, 
+          { label: 'C9', id: 9, neighbors: [1, 4, 7, 3] }, 
+          { label: 'C10', id: 10, neighbors: [3, 4, 5, 0] }, 
+          { label: 'C11', id: 11, neighbors: [0, 1, 3, 6] }],
+        symbolNodes: [
+          // no need to provide duplicate neighbor data for symbol nodes,
+          // tanner graph will fill it
+          { label: 'S0', id: 0, neighbors: [] },
+          { label: 'S1', id: 1, neighbors: [] },
+          { label: 'S2', id: 2, neighbors: [] },
+          { label: 'S3', id: 3, neighbors: [] },
+          { label: 'S4', id: 4, neighbors: [] },
+          { label: 'S5', id: 5, neighbors: [] },
+          { label: 'S6', id: 6, neighbors: [] },
+          { label: 'S7', id: 7, neighbors: [] }]
+      });
+      
+      graph.render();
+      
+      graph.subGraph(8, 3);
     });
-    
-    graph.render();
-  });
-</script>
+  </script>
+</body>

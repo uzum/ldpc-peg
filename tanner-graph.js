@@ -2,56 +2,68 @@
 
 function TannerGraph(parameters){
   this.symbolNodes = parameters.symbolNodes;
-  this.checkNodes = parameters.checkNodes;
-  this.links = parameters.links;
+  this.checkNodes = parameters.checkNodes
+  this.symbolNodes.forEach(node => node.group = "symbol");
+  this.checkNodes.forEach(node => node.group = "check");
+  
+  this.edges = parameters.checkNodes.reduce(function(edges, checkNode){
+    var checkNodeEdges = checkNode.neighbors.map(function(symbol){
+      // fill symbolNodes' neighbors lists
+      var targetSymbol = parameters.symbolNodes.filter(s => s.id === symbol)[0];
+      targetSymbol.neighbors.push(checkNode.id);
+      
+      return {
+        from: checkNode.id,
+        to: symbol
+      }
+    });
+    return edges.concat(checkNodeEdges);
+  }, []);
 }
 
 TannerGraph.prototype.render = function(){
-  if(!TannerGraph.d3) throw new Error("You need to define d3.js first");
+  if(!TannerGraph.vis) throw new Error("You need to define vis.js first");
   
-  var width = 1080;
-  var height = 720;
-  var symbolNodes = this.symbolNodes.map( node => { return { index: node, class: "symbol" } } );
-  var checkNodes = this.checkNodes.map( node => { return { index: node, class: "check" } } );
+  var container = document.querySelector('#tanner-graph');
   
-  var nodes = symbolNodes.concat(checkNodes);
+  var data = {
+    nodes: new TannerGraph.vis.DataSet(this.symbolNodes.concat(this.checkNodes)),
+    edges: new TannerGraph.vis.DataSet(this.edges)
+  };
+  var options = {};
   
-  var links = this.links.map( link => { return { source: link[0], target: link[1] } } );
+  var network = new TannerGraph.vis.Network(container, data, options);
+};
+
+TannerGraph.prototype.renderSubGraph = function(subGraph){
   
-  var svg = TannerGraph.d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-    
-  var graph = TannerGraph.d3.layout.force()
-    .size([width, height])
-    .nodes(nodes)
-    .links(links)
-    .charge(-200)
-    .chargeDistance(200)
-    .linkDistance(300);
-    
-  var link = svg.selectAll(".link")
-    .data(links)
-    .enter().append("line")
-    .attr("class", "link");
-    
-  var node = svg.selectAll(".node")
-    .data(nodes)
-    .enter().append("circle")
-    .attr("r", 5)
-    .attr("class", d => "node " + d.class)
-    .call(graph.drag);
-   
-  graph.on("tick", function(){
-    node.attr("r", width / 25)
-      .attr("cx", d => d.x )
-      .attr("cy", d => d.y );
-      
-    link.attr("x1", d => d.source.x )
-      .attr("y1", d => d.source.y )
-      .attr("x2", d => d.target.x )
-      .attr("y2", d => d.target.y )
-  });
-  
-  graph.start();
+};
+
+TannerGraph.prototype.getNode = function(id){
+  return this.symbolNodes.concat(this.checkNodes).filter(n => n.id === id)[0] || null;
 }
+
+TannerGraph.prototype.subGraph = function(nodeId, depth){
+  var rootNode = this.getNode(nodeId);
+    
+  var treeRoot = { 
+    ref: rootNode,
+    id: rootNode.id, 
+    label: rootNode.label, 
+    group: rootNode.group, 
+    children: [] 
+  };
+  
+  var currentLevel = [treeRoot];
+  while(currentLevel.length && depth){
+    depth--;
+    var node = currentLevel.shift();
+    var childrenNodes = node.ref.neighbors
+      .map(id => this.getNode(id) )
+      .map(c => { return { ref: c, id: c.id, label: c.label, group: c.group, children: [] }; });
+    node.children = childrenNodes;
+    currentLevel = currentLevel.concat(childrenNodes);
+  }
+  
+  return treeRoot;
+};
