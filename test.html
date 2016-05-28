@@ -42,22 +42,20 @@
   <div id="sub-graph"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js"></script>
   <script src="./tanner-graph.js"></script>
+  <script src="./peg.js"></script>
   <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function(){
       TannerGraph.vis = window.vis;
       TannerGraph.width = screen.width / 2;
       TannerGraph.height = 600;
 
-      var graph = new TannerGraph([
-        [0, 1, 0, 1, 1, 0, 0, 1],
-        [1, 1, 1, 0, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0, 1, 1, 1],
-        [1, 0, 0, 1, 1, 0, 1, 0]
-      ]);
+      PEG.create({
+        checkNodeNumber: 4,
+        symbolNodeNumber: 8,
+        symbolNodeDegrees: [2, 2, 2, 2, 3, 3, 3, 3]
+      });
 
-      graph.render();
-
-      // graph.renderSubGraph(graph.subGraph(4, 4));
+      PEG.debug();
     });
   </script>
 </body>

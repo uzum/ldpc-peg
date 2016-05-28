@@ -1,19 +1,25 @@
 // author: anil.uzumcuoglu
 
-function TannerGraph(matrix){
+var TannerGraph = function(matrix){
   this.matrix = matrix;
-  this.checkNodes = matrix.map( (_, index) => {
-    return {
-      id: index,
-      label: 'S' + index,
-      connections: []
-    };
-  });
+
   this.symbolNodes = matrix[0].map( (_, index) => {
     return {
-      id: index + matrix.length,
+      matrixIdx: index,
+      id: index,
+      label: 'S' + index,
+      connections: [],
+      group: 'symbol'
+    };
+  });
+
+  this.checkNodes = matrix.map( (_, index) => {
+    return {
+      matrixIdx: index,
+      id: index + matrix[0].length,
       label: 'C' + index,
-      connections: []
+      connections: [],
+      group: 'check'
     };
   });
   this.edges = [];
@@ -27,84 +33,33 @@ function TannerGraph(matrix){
       }
     }
   }
-}
-
-TannerGraph.prototype.render = function(){
-  if(!TannerGraph.vis) throw new Error("You need to define vis.js first");
-
-  var container = document.querySelector('#tanner-graph');
-
-  var data = {
-    nodes: new TannerGraph.vis.DataSet(this.symbolNodes.map((symbolNode, index) => {
-      symbolNode.group = 'symbol';
-      symbolNode.physics = false;
-      symbolNode.x = index * TannerGraph.width / ( this.symbolNodes.length + 1 );
-      symbolNode.y = TannerGraph.height * 0.25;
-      return symbolNode;
-    }).concat(this.checkNodes.map((checkNode, index) => {
-      checkNode.group = 'check';
-      checkNode.physics = false;
-      checkNode.x = index * TannerGraph.width / ( this.checkNodes.length + 1 );
-      checkNode.y = TannerGraph.height * 0.75;
-      return checkNode;
-    }))),
-    edges: new TannerGraph.vis.DataSet(this.edges)
-  };
-  var options = {};
-
-  var network = new TannerGraph.vis.Network(container, data, options);
 };
 
-TannerGraph.prototype.renderSubGraph = function(root){
-  if(!TannerGraph.vis) throw new Error("You need to define vis.js first");
+var SubGraph = function(tannerGraph, rootNodeId, depth){
+  if(depth < 0) throw new Error("depth cannot be negative!");
 
-  var container = document.querySelector('#sub-graph');
+  this.rootNode = tannerGraph.getNode(rootNodeId);
+  this._tannerGraph = tannerGraph;
 
-  var data = { nodes: [], edges: [] };
-  var queue = [root];
-  while(queue.length){
-    var node = queue.shift();
-    data.nodes.push(node);
-    node.children.forEach(function(child){
-      queue.push(child);
-      data.edges.push({
-        from: node.id,
-        to: child.id
-      });
-    });
-  }
-
-  var network = new TannerGraph.vis.Network(container, data, {
-    layout: { hierarchical: true }
-  });
-};
-
-TannerGraph.prototype.getNode = function(id){
-  return this.symbolNodes.concat(this.checkNodes).filter(n => n.id === id)[0] || null;
-}
-
-TannerGraph.prototype.subGraph = function(nodeId, depth){
-  var rootNode = this.getNode(nodeId);
-
-  var treeRoot = {
-    ref: rootNode,
-    id: rootNode.id,
-    label: rootNode.label,
-    group: rootNode.group,
+  this.treeRoot = {
+    ref: this.rootNode,
+    id: this.rootNode.id,
+    label: this.rootNode.label,
+    group: this.rootNode.group,
     children: [],
     level: 0
   };
 
   var level = 0;
-  var usedNodes = [treeRoot];
-  var queue = [treeRoot];
+  var usedNodes = [this.treeRoot];
+  var queue = [this.treeRoot];
 
   while(queue.length && level < depth){
     level++;
     var levelQueue = [];
     queue.forEach((node) => {
       var childrenNodes = node.ref.connections
-      .map(connection => this.getNode(connection.id) )
+      .map(connection => tannerGraph.getNode(connection.id) )
       .map(c => {
         return {
           ref: c,
@@ -123,5 +78,123 @@ TannerGraph.prototype.subGraph = function(nodeId, depth){
     });
     queue = levelQueue;
   }
-  return treeRoot;
+
+  // save actual level because PEG will need it
+  this.level = level;
+};
+
+TannerGraph.prototype.getNode = function(id){
+  return this.symbolNodes.concat(this.checkNodes).filter(n => n.id === id)[0] || null;
+};
+
+TannerGraph.prototype.createEdge = function(symbolNodeId, checkNodeId){
+  var symbolNode = this.getNode(symbolNodeId);
+  var checkNode = this.getNode(checkNodeId);
+
+  symbolNode.connections.push(checkNode);
+  checkNode.connections.push(symbolNode);
+  this.edges.push({ from: checkNode.id, to: symbolNode.id });
+  this.matrix[checkNode.matrixIdx][symbolNode.matrixIdx] = 1;
+};
+
+TannerGraph.prototype.getCheckNodeWithLowestDegree = function(){
+  return this.checkNodes.reduce((lowest, current) => {
+    if(current.connections.length < lowest.connections.length)
+      return current;
+    return lowest;
+  }, this.checkNodes[0]);
+};
+
+TannerGraph.prototype.getSymbolNodeWithLowestDegree = function(){
+  return this.symbolNodes.reduce((lowest, current) => {
+    if(current.connections.length < lowest.connections.length)
+      return current;
+    return lowest;
+  }, this.symbolNodes[0]);
+};
+
+TannerGraph.prototype.getSubGraph = function(nodeId, depth){
+  return new SubGraph(this, nodeId, depth);
+};
+
+SubGraph.prototype.coveredCheckNodes = function(){
+  var coveredCheckNodes = [];
+  var queue = [this.treeRoot];
+  while(queue.length){
+    var node = queue.shift();
+    if(node.group === 'check')
+      coveredCheckNodes.push(node);
+
+    node.children.forEach(child => { queue.push(child); });
+  }
+  return coveredCheckNodes;
+};
+
+SubGraph.prototype.allCheckNodesCovered = function(){
+  return this.coveredCheckNodes().length === this._tannerGraph.checkNodes.length;
+};
+
+SubGraph.prototype.getUCCheckNodeWithLowestDegree = function(){
+  var coveredCheckNodes = this.coveredCheckNodes();
+  var uncoveredCheckNodes = this._tannerGraph.checkNodes.filter(node => {
+    return coveredCheckNodes.every(cnode => cnode.id !== node.id);
+  });
+
+  return uncoveredCheckNodes.reduce((lowest, current) => {
+    if(current.connections.length < lowest.connections.length)
+      return current;
+    return lowest;
+  }, uncoveredCheckNodes[0]);
+};
+
+/*
+  Rendering algorithms using vis.js library
+*/
+
+TannerGraph.prototype.render = function(){
+  if(!TannerGraph.vis) throw new Error("You need to define vis.js first");
+
+  var container = document.querySelector('#tanner-graph');
+
+  var data = {
+    nodes: new TannerGraph.vis.DataSet(this.symbolNodes.map((symbolNode, index) => {
+      symbolNode.physics = false;
+      symbolNode.x = index * TannerGraph.width / ( this.symbolNodes.length + 1 );
+      symbolNode.y = TannerGraph.height * 0.25;
+      return symbolNode;
+    }).concat(this.checkNodes.map((checkNode, index) => {
+      checkNode.physics = false;
+      checkNode.x = index * TannerGraph.width / ( this.checkNodes.length + 1 );
+      checkNode.y = TannerGraph.height * 0.75;
+      return checkNode;
+    }))),
+    edges: new TannerGraph.vis.DataSet(this.edges)
+  };
+  var options = {};
+
+  var network = new TannerGraph.vis.Network(container, data, options);
+};
+
+SubGraph.prototype.render = function(){
+  if(!TannerGraph.vis) throw new Error("You need to define vis.js first");
+
+  var container = document.querySelector('#sub-graph');
+
+  var data = { nodes: [], edges: [] };
+  var queue = [this.treeRoot];
+  while(queue.length){
+    var node = queue.shift();
+    data.nodes.push(node);
+    node.children.forEach(function(child){
+      queue.push(child);
+      data.edges.push({
+        from: node.id,
+        to: child.id
+      });
+    });
+  }
+
+  var network = new TannerGraph.vis.Network(container, data, {
+    layout: { hierarchical: true }
+  });
 };
