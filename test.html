@@ -5,9 +5,17 @@
 <style>
 
 #tanner-graph {
-  width: 600px;
-  height: 400px;
+  width: 49%;
+  height: 600px;
   border: 1px solid lightgray;
+  float: left;
+}
+
+#sub-graph {
+  width: 49%;
+  height: 600px;
+  border: 1px solid lightgray;
+  float: left;
 }
 
 .node.symbol {
@@ -31,33 +39,25 @@
 
 <body>
   <div id="tanner-graph"></div>
+  <div id="sub-graph"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js"></script>
   <script src="./tanner-graph.js"></script>
   <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function(){
       TannerGraph.vis = window.vis;
-      var graph = new TannerGraph({
-        checkNodes: [
-          { label: 'C8', id: 8, neighbors: [2, 6, 7, 0] }, 
-          { label: 'C9', id: 9, neighbors: [1, 4, 7, 3] }, 
-          { label: 'C10', id: 10, neighbors: [3, 4, 5, 0] }, 
-          { label: 'C11', id: 11, neighbors: [0, 1, 3, 6] }],
-        symbolNodes: [
-          // no need to provide duplicate neighbor data for symbol nodes,
-          // tanner graph will fill it
-          { label: 'S0', id: 0, neighbors: [] },
-          { label: 'S1', id: 1, neighbors: [] },
-          { label: 'S2', id: 2, neighbors: [] },
-          { label: 'S3', id: 3, neighbors: [] },
-          { label: 'S4', id: 4, neighbors: [] },
-          { label: 'S5', id: 5, neighbors: [] },
-          { label: 'S6', id: 6, neighbors: [] },
-          { label: 'S7', id: 7, neighbors: [] }]
-      });
-      
+      TannerGraph.width = screen.width / 2;
+      TannerGraph.height = 600;
+
+      var graph = new TannerGraph([
+        [0, 1, 0, 1, 1, 0, 0, 1],
+        [1, 1, 1, 0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 1, 1],
+        [1, 0, 0, 1, 1, 0, 1, 0]
+      ]);
+
       graph.render();
-      
-      graph.subGraph(8, 3);
+
+      // graph.renderSubGraph(graph.subGraph(4, 4));
     });
   </script>
 </body>
