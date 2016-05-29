@@ -16,6 +16,7 @@ var PEG = (function(){
   var symbolNodeNumber = 0;
   var symbolNodeDegrees = [];
   var tannerGraph;
+  var hook;
 
   // this is the most critical part of the progressive edge growth algorithm
   var calculateEdges = function(){
@@ -85,6 +86,7 @@ var PEG = (function(){
       symbolNodeDegrees = options.symbolNodeDegrees;
 
       calculateEdges();
+      return tannerGraph;
     },
     // this function registers a callback to be called
     // each time a new edge is being added to the tanner-graph

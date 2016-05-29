@@ -207,18 +207,22 @@ TannerGraph.prototype.render = function(container, onClick){
   var data = {
     nodes: new TannerGraph.vis.DataSet(this.symbolNodes.map((symbolNode, index) => {
       symbolNode.physics = false;
-      symbolNode.x = index * TannerGraph.width / ( this.symbolNodes.length + 1 );
-      symbolNode.y = TannerGraph.height * 0.25;
+      symbolNode.x = index * container.offsetWidth / ( this.symbolNodes.length + 1 );
+      symbolNode.y = container.offsetHeight * 0.25;
       return symbolNode;
     }).concat(this.checkNodes.map((checkNode, index) => {
       checkNode.physics = false;
-      checkNode.x = index * TannerGraph.width / ( this.checkNodes.length + 1 );
-      checkNode.y = TannerGraph.height * 0.75;
+      checkNode.x = index * container.offsetWidth / ( this.checkNodes.length + 1 );
+      checkNode.y = container.offsetHeight * 0.75;
       return checkNode;
     }))),
     edges: new TannerGraph.vis.DataSet(this.edges)
   };
-  var options = {};
+  var options = {
+    interaction: {
+      zoomView: false
+    }
+  };
 
   var network = new TannerGraph.vis.Network(container, data, options);
 
@@ -244,6 +248,7 @@ SubGraph.prototype.render = function(container){
   }
 
   var network = new TannerGraph.vis.Network(container, data, {
+    interaction: { zoomView: false },
     layout: { hierarchical: true }
   });
 };
