@@ -1,6 +1,8 @@
 // author: anil.uzumcuoglu
 
 var PEG = (function(){
+  // simple array creation function
+  // arrayOf(5, 1) returns [1, 1, 1, 1, 1]
   var arrayOf = function(size, value){
     if(!value) value = 0;
     var array = [];
@@ -15,8 +17,12 @@ var PEG = (function(){
 
   // this is the most critical part of the progressive edge growth algorithm
   var calculateEdges = function(){
+    // create an initial parity check matrix whose all elements are 0
     var parityCheckMatrix = arrayOf(checkNodeNumber)
       .map(_ => arrayOf(symbolNodeNumber));
+
+    // use this parity check matrix to create the initial tanner-graph
+    // which is only symbol and check nodes, without any edge
     tannerGraph = new TannerGraph(parityCheckMatrix);
 
     symbolNodeDegrees.forEach((degree, index) => {
@@ -28,6 +34,7 @@ var PEG = (function(){
           // in current graph configuration
           var lowest = tannerGraph.getCheckNodeWithLowestDegree();
           tannerGraph.createEdge(symbolNode.id, lowest.id);
+          hook && hook(tannerGraph);
         // we need to look at the subgraph from this symbol node to decide edge
         }else{
           // we will gradually deepen the subgraph expanding from this symbol node
@@ -45,6 +52,7 @@ var PEG = (function(){
               // which is uncovered in the previous subgraph, but covered in this one
               var lowest = previousSubGraph.getUCCheckNodeWithLowestDegree();
               tannerGraph.createEdge(symbolNode.id, lowest.id);
+              hook && hook(tannerGraph);
               break;
             }
 
@@ -57,6 +65,7 @@ var PEG = (function(){
               // select the check node with the lowest degree among the nodes not covered by this subgraph
               var lowest = currentSubGraph.getUCCheckNodeWithLowestDegree();
               tannerGraph.createEdge(symbolNode.id, lowest.id);
+              hook && hook(tannerGraph);
               break;
             }
             currentSubGraph = nextSubGraph;
@@ -67,6 +76,7 @@ var PEG = (function(){
   };
 
   return {
+    // creates the tanner-graph for the given parameters
     create: function(options){
       checkNodeNumber = options.checkNodeNumber;
       symbolNodeNumber = options.symbolNodeNumber;
@@ -74,10 +84,11 @@ var PEG = (function(){
 
       calculateEdges();
     },
-    debug: function(){
-      console.log(tannerGraph.matrix);
-      console.log(tannerGraph.getCheckNodeWithLowestDegree());
-      tannerGraph.render();
+    // this function registers a callback to be called
+    // each time a new edge is being added to the tanner-graph
+    // it will be useful to store intermediate steps to see how the algorithm works step by step
+    hook: function(callback){
+      hook = callback;
     }
   }
 })();
