@@ -1,4 +1,6 @@
 // author: anil.uzumcuoglu
+// the implementation of the progressive edge growth algorithm
+// for creating a short-cycle free tanner-graph in LDPC code construction
 
 var PEG = (function(){
   // simple array creation function
