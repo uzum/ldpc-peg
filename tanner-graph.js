@@ -47,7 +47,7 @@ var TannerGraph = function(matrix){
 };
 
 // the constructor for a sub-graph representing a tanner-graph expansion with the given node and depth
-// a typical user is not meant to be use this constructor
+// a typical user is not meant to use this constructor
 // it is safer to call TannerGraph.prototype.getSubGraph instead
 var SubGraph = function(tannerGraph, rootNodeId, depth){
   if(depth < 0) throw new Error("depth cannot be negative!");
