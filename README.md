@@ -15,6 +15,8 @@ Having fewer 1s also helps to devise a graphical representation method for the p
 
 <img src="http://i.imgur.com/Dkv3l8t.png" />
 
+Typically, if you try to decode a codeword using the parity check matrix, the computation complexity would be related to the number of 1s in the matrix, in other words, O(n<sup>2</sup>) asymptotically. In a low density matrix, the number of 1s in the array are assumed to be degree of (n) instead. Traditional decoding algorithms cannot really make use of this difference so even a matrix with a very low density does not yield good performance results when the block length gets very large. But in iterative decoding algorithms where local computations are used in a divide-and-conquer strategy, the sparseness of the matrix helps in several ways. First it helps to keep both the local calculations simple and also reduces the complexity of combining the sub-problems by reducing the number of needed messages to exchange all the information.
+
 ## Definitions
 
 ## Algorithm and implementation
