@@ -37,9 +37,17 @@ In our approach to provide a method to create short-cycle free Tanner graphs, we
 ## Algorithm and implementation
 Finding the absolute solution to this problem; in other words, constructing the Tanner graph with the lowest possible girth with the given parameters is quite difficult in terms of algorithmic complexity. The Progressive Edge Growth algorithm on the other hand does not try to find the absolute best solution, it rather creates a suboptimum solution with a relatively large girth, which is considered feasible and useful as well. The algorithm starts with only nodes (no edges) and add new edges to the graph one by one in such a way that each edge addition has as small impact in the girth of the graph as possible. It only considers the current state and greedily only moves forward. It does not have the ability to backtrack to previous states even if they would be better alternatives.
 
-The algorithm starts with 3 parameters: number of check nodes, number of symbol nodes and the symbol degree sequence. So the number of nodes and edges in the graph is known beforehand, the algorithm is responsible for finding the best connections and it grows edge by edge in each iteration. The algorithm goes over the symbol nodes one by one and
-## Example
+The algorithm starts with 3 parameters: number of check nodes, number of symbol nodes and the symbol degree sequence. So the number of nodes and edges in the graph is known beforehand and the algorithm is responsible for finding the best connections and it grows edge by edge in each iteration. The algorithm goes over the symbol nodes one by one and it starts working on another node only after all the edges required by that node's degree is established. Each edge addition is handled in such a way that always the best option with the least impact for the girth in the current state is selected. If this is the first edge of the current symbol node, then it's obvious that it cannot create a short cycle because a cycle means there are at least 2 edges passing through that node. So the algorithm picks the check node with the lowest check node degree, i.e the node with the least number of edges in the graph's current setting. This selection is not strictly better than the others since there is no effect on the girth in any case but it's the best candidate because it leaves the most space for future actions. If this is not the first edge for that symbol node, then there are 2 scenarios:
 
+1. There are nodes which are not covered by the subgraph expanded from the current symbol node. This could be either because of the current Tanner graph does not cover all the nodes, which is usually the case at the beginning or, all the nodes in the Tanner graph is not connected to each other yet, which means the current Tanner graph can be divided into multiple subgraphs. In this case, the algorithm selects the node with the lowest check node number from the set of nodes which are not covered by the subgraph expanded from the current symbol node.
+
+2. The subgraph expanded from the current symbol node already covers all the check nodes in the system. In this case, we need to find the check nodes which are at the farthest distance from that symbol node. In order to find them, the algorithm looks at the previous depth of the expansion tree, just before all check nodes are covered. The check nodes which are uncovered by this previous subgraph are the ones that are added last. Then the algorithm again chooses the one with the lowest check node degree from this set.
+
+When the algorithm creates enough edges for every symbol node, it terminates.
+
+## Usage example
+
+An HTML file that computes and renders the tanner graph created by PEG for parameters <code>n = 8</code>, <code>m = 4</code> and symbol node degrees are all 2.
 ```html
 <html>
   <body>
@@ -65,4 +73,20 @@ The algorithm starts with 3 parameters: number of check nodes, number of symbol 
     </script>
   </body>
 </html>
+```
+
+<code>peg.js</code> also allows hooking into the edge creation step to inspect intermediate states while the algorithm is running. You can pass a callback function to the <code>PEG.hook</code> which will be called each time an edge has just been added. For instance this code prints the current parity check matrix to the console each time an edge is added by the PEG algorithm:
+
+```javascript
+  // the hook should be defined before PEG.create, it does not work retroactively
+  PEG.hook(function(intermediateGraph){
+    var matrixAsString = intermediateGraph.map(row => row.slice(0).join(' ')).join('\n');
+    console.log(matrixAsString);
+  });
+
+  var graph = PEG.create({
+    checkNodeNumber: 4,
+    symbolNodeNumber: 8,
+    symbolNodeDegrees: [2, 2, 2, 2, 2, 2, 2, 2]
+  });
 ```
