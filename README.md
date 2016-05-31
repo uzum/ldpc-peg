@@ -34,3 +34,32 @@ In our approach to provide a method to create short-cycle free Tanner graphs, we
 * **covered nodes by a subgraph** are the nodes which are included in the given subgraph. **Uncovered nodes** on the other hand corresponds to the nodes that are in the Tanner graph but not in the given subgraph. For instance if the depth of the subgraph above was one lower, then S3 would be an uncovered node.
 
 ## Algorithm and implementation
+
+## Example
+
+```html
+<html>
+  <body>
+    <div id="container" style="width: 800px; height: 600px;"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js"></script>
+    <script src="./tanner-graph.js"></script>
+    <script src="./peg.js"></script>
+    <script type="text/javascript">
+      document.addEventListener("DOMContentLoaded", function(){
+        // define the rendering engine reference for TannerGraph class
+        TannerGraph.vis = window.vis;
+        
+        // PEG.create returns the constructed Tanner graph for the given parameters
+        var graph = PEG.create({
+          checkNodeNumber: 4,
+          symbolNodeNumber: 8,
+          symbolNodeDegrees: [2, 2, 2, 2, 2, 2, 2, 2]
+        });
+        
+        // render the graph in the given parent element
+        graph.render(document.querySelector('#container'));
+      });
+    </script>
+  </body>
+</html>
+```
