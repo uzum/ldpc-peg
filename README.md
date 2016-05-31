@@ -27,14 +27,17 @@ In our approach to provide a method to create short-cycle free Tanner graphs, we
 * **check node degree** is the number of edges connected to a check node, i.e. the number of 1s in the row of the parity check matrix corresponding to that check node
 * **symbol degree sequence** is a list containing the symbol node degrees of all symbol nodes
 * **check degree sequence** is a list containing the check node degrees of all check nodes
-* **a subgraph of a node of length l** is defined by expanding the graph as a tree starting from the given node with a breadth first search method, until depth of the tree reaches l. The nodes already included in the tree does not have to be added again as we are only dealing with the first occurrences of nodes. So if all the nodes are included before the depth reaches l, the tree expansion stops. For instance given the following Tanner graph in the figure below, you can see the subgraph of <code>S2</code> of length 3. Also note that all the nodes are included in this specific subgraph, so it will not get any deeper.
+* **girth** is the length of the shortest cycle in the Tanner graph
+* **the subgraph of a node of length <code>l</code>** is defined by expanding the graph as a tree starting from the given node with a breadth first search method, until depth of the tree reaches <code>l</code>. The nodes already included in the tree does not have to be added again as we are only dealing with the first occurrences of nodes. So if all the nodes are included before the depth reaches <code>l</code>, the tree expansion stops. For instance given the following Tanner graph in the figure below, you can see the subgraph of <code>S2</code> of length 3. Also note that all the nodes are included in this specific subgraph, so it will not get any deeper.
 
 <img src="http://i.imgur.com/fUCLful.png" />
 
 * **covered nodes by a subgraph** are the nodes which are included in the given subgraph. **Uncovered nodes** on the other hand corresponds to the nodes that are in the Tanner graph but not in the given subgraph. For instance if the depth of the subgraph above was one lower, then S3 would be an uncovered node.
 
 ## Algorithm and implementation
+Finding the absolute solution to this problem; in other words, constructing the Tanner graph with the lowest possible girth with the given parameters is quite difficult in terms of algorithmic complexity. The Progressive Edge Growth algorithm on the other hand does not try to find the absolute best solution, it rather creates a suboptimum solution with a relatively large girth, which is considered feasible and useful as well. The algorithm starts with only nodes (no edges) and add new edges to the graph one by one in such a way that each edge addition has as small impact in the girth of the graph as possible. It only considers the current state and greedily only moves forward. It does not have the ability to backtrack to previous states even if they would be better alternatives.
 
+The algorithm starts with 3 parameters: number of check nodes, number of symbol nodes and the symbol degree sequence. So the number of nodes and edges in the graph is known beforehand, the algorithm is responsible for finding the best connections and it grows edge by edge in each iteration. The algorithm goes over the symbol nodes one by one and
 ## Example
 
 ```html
@@ -48,14 +51,14 @@ In our approach to provide a method to create short-cycle free Tanner graphs, we
       document.addEventListener("DOMContentLoaded", function(){
         // define the rendering engine reference for TannerGraph class
         TannerGraph.vis = window.vis;
-        
+
         // PEG.create returns the constructed Tanner graph for the given parameters
         var graph = PEG.create({
           checkNodeNumber: 4,
           symbolNodeNumber: 8,
           symbolNodeDegrees: [2, 2, 2, 2, 2, 2, 2, 2]
         });
-        
+
         // render the graph in the given parent element
         graph.render(document.querySelector('#container'));
       });
