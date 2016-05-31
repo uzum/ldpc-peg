@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function(){
       graphProgress.push(intermediateGraph.getClone());
     });
 
+    graphProgress = [];
+    graphProgressIndex = 0;
     var tannerGraph = PEG.create({
       checkNodeNumber: checkNodeNumber,
       symbolNodeNumber: symbolNodeNumber,
@@ -45,6 +47,8 @@ document.addEventListener('DOMContentLoaded', function(){
     intermediateGraph.render(intermediateGraphContainer, function(data){
       var subGraph = intermediateGraph.getSubGraph(data.nodes[0], 0);
       subGraph.render(subGraphContainer);
+      
+      depthInput.value = 0;
       depthInput.addEventListener('change', function(event){
         var newSubGraph = intermediateGraph.getSubGraph(data.nodes[0], depthInput.value);
         newSubGraph.render(subGraphContainer);
@@ -61,6 +65,8 @@ document.addEventListener('DOMContentLoaded', function(){
     intermediateGraph.render(intermediateGraphContainer, function(data){
       var subGraph = intermediateGraph.getSubGraph(data.nodes[0], 0);
       subGraph.render(subGraphContainer);
+
+      depthInput.value = 0;
       depthInput.addEventListener('change', function(event){
         var newSubGraph = intermediateGraph.getSubGraph(data.nodes[0], depthInput.value);
         newSubGraph.render(subGraphContainer);
