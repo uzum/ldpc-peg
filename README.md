@@ -34,7 +34,7 @@ In our approach to provide a method to create short-cycle free Tanner graphs, we
 
 * **covered nodes by a subgraph** are the nodes which are included in the given subgraph. **Uncovered nodes** on the other hand corresponds to the nodes that are in the Tanner graph but not in the given subgraph. For instance if the depth of the subgraph above was one lower, then S3 would be an uncovered node.
 
-## Algorithm and implementation
+## Algorithm
 Finding the absolute solution to this problem; in other words, constructing the Tanner graph with the lowest possible girth with the given parameters is quite difficult in terms of algorithmic complexity. The Progressive Edge Growth algorithm on the other hand does not try to find the absolute best solution, it rather creates a suboptimum solution with a relatively large girth, which is considered feasible and useful as well. The algorithm starts with only nodes (no edges) and add new edges to the graph one by one in such a way that each edge addition has as small impact in the girth of the graph as possible. It only considers the current state and greedily only moves forward. It does not have the ability to backtrack to previous states even if they would be better alternatives.
 
 The algorithm starts with 3 parameters: number of check nodes, number of symbol nodes and the symbol degree sequence. So the number of nodes and edges in the graph is known beforehand and the algorithm is responsible for finding the best connections and it grows edge by edge in each iteration. The algorithm goes over the symbol nodes one by one and it starts working on another node only after all the edges required by that node's degree is established. Each edge addition is handled in such a way that always the best option with the least impact for the girth in the current state is selected. If this is the first edge of the current symbol node, then it's obvious that it cannot create a short cycle because a cycle means there are at least 2 edges passing through that node. So the algorithm picks the check node with the lowest check node degree, i.e the node with the least number of edges in the graph's current setting. This selection is not strictly better than the others since there is no effect on the girth in any case but it's the best candidate because it leaves the most space for future actions. If this is not the first edge for that symbol node, then there are 2 scenarios:
@@ -44,6 +44,14 @@ The algorithm starts with 3 parameters: number of check nodes, number of symbol 
 2. The subgraph expanded from the current symbol node already covers all the check nodes in the system. In this case, we need to find the check nodes which are at the farthest distance from that symbol node. In order to find them, the algorithm looks at the previous depth of the expansion tree, just before all check nodes are covered. The check nodes which are uncovered by this previous subgraph are the ones that are added last. Then the algorithm again chooses the one with the lowest check node degree from this set.
 
 When the algorithm creates enough edges for every symbol node, it terminates.
+
+## Implementation
+
+The implementation composes of 2 files: <code>peg.js</code> and <code>tanner-graph.js</code>. The latter one contains <code>TannerGraph</code> class and it only acts as an abstraction for the PEG algorithm. A Tanner graph is represented by the corresponding parity check matrix. Each symbol and check nodes are stored as well as the edges (connection) between them. A Tanner graph is capable of creating a sub-graph from itself for the given node, which is actually a SubGraph object. Both classes have handy trivial operations to be used by the PEG algorithm and they are able to render themselves using [vis.js](http://visjs.org/) visualization library if the code is running on a browser.
+
+<code>peg.js</code> contains the actual Progressive Edge Growth algorithm. Its <code>PEG.create</code> method should be called with the relevant parameters (m, m and the symbol node degrees array). The return value is a TannerGraph object representing the final graph after the algorithm does its job. Another useful method <code>PEG.hook</code> registers a callback function to be hooked into the edge addition step. In other words, the function you pass onto the <code>PEG.hook</code> will be called each time a new edge has just been added to Tanner graph.
+
+There is also a demo and simulation page: http://uzum.github.io/ldpc-peg. <code>PEG.create</code> can be called and the final Tanner graph can be rendered by playing with the dynamic parameters on the page. Also each step is hooked and saved when the algorithm runs so that you can inspect it using the "Intermediate steps" panel with the previous and next arrow buttons. Furthermore, double clicking on a node in this intermediate graph reveals a subgraph expanding from that node, whose depth again can be configurable. The source code for the simulation page is in the <code>gh-pages</code> branch of this repository:  
 
 ## Usage example
 
@@ -80,7 +88,7 @@ An HTML file that computes and renders the tanner graph created by PEG for param
 ```javascript
   // the hook should be defined before PEG.create, it does not work retroactively
   PEG.hook(function(intermediateGraph){
-    var matrixAsString = intermediateGraph.map(row => row.slice(0).join(' ')).join('\n');
+    var matrixAsString = intermediateGraph.matrix.map(row => row.join(' ')).join('\n');
     console.log(matrixAsString);
   });
 
