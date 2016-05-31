@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function(){
   var finalGraphContainer = document.querySelector('#final-graph');
   var intermediateGraphContainer = document.querySelector('#intermediate-graph');
   var subGraphContainer = document.querySelector('#sub-graph');
+  var finalMatrix = document.querySelector('#final-matrix');
+  var intermediateMatrix = document.querySelector('#intermediate-matrix');
 
   var graphProgress = [];
   var graphProgressIndex = 0;
@@ -34,8 +36,10 @@ document.addEventListener('DOMContentLoaded', function(){
     });
 
     tannerGraph.render(finalGraphContainer);
+    finalMatrix.innerText = tannerGraph.matrix.map(a => a.join(' ')).join('\n');
 
     graphProgress[0].render(intermediateGraphContainer);
+    intermediateMatrix.innerText = "";
   });
 
   nextButton.addEventListener('click', function(event){
@@ -54,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function(){
         newSubGraph.render(subGraphContainer);
       });
     });
+    intermediateMatrix.innerText = intermediateGraph.matrix.map(a => a.join(' ')).join('\n');
   });
 
   prevButton.addEventListener('click', function(event){
@@ -72,5 +77,6 @@ document.addEventListener('DOMContentLoaded', function(){
         newSubGraph.render(subGraphContainer);
       });
     });
+    intermediateMatrix.innerText = intermediateGraph.matrix.map(a => a.join(' ')).join('\n');
   });
 });

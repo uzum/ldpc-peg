@@ -34,22 +34,26 @@
             <div class="panel-body">
               <form id="parameters" class="form">
                 <div class="form-group col-lg-3">
-                  <label for="symbol-node-number">Number of symbol nodes</label>
-                  <input class="form-control" id="symbol-node-number" type="number" placeholder="n" />
+                  <label for="symbol-node-number">Number of symbol nodes (n)</label>
+                  <input class="form-control" id="symbol-node-number" type="number" value="8" />
                 </div>
                 <div class="form-group col-lg-3">
-                  <label for="check-node-number">Number of check nodes</label>
-                  <input class="form-control" id="check-node-number" type="number" placeholder="m" />
+                  <label for="check-node-number">Number of check nodes (m)</label>
+                  <input class="form-control" id="check-node-number" type="number" value="4" />
                 </div>
                 <div class="form-group col-lg-3">
-                  <label for="symbol-node-degrees">Symbol node degrees</label>
-                  <input class="form-control" id="symbol-node-degrees" type="text" placeholder="(seperated by comma)" />
+                  <label for="symbol-node-degrees">S-node degrees (comma separated)</label>
+                  <input class="form-control" id="symbol-node-degrees" type="text" value="2,2,2,2,2,2,2,2" />
                 </div>
                 <div class="form-group col-lg-3">
                   <button id="create-button" class="btn btn-primary">Create</button>
                 </div>
               </form>
               <div id="final-graph" class="col-lg-12"></div>
+              <div class="col-lg-12">
+                <p>parity check matrix: </p>
+                <pre id="final-matrix"></pre>
+              </div>
             </div>
           </div>
         </div>
@@ -62,6 +66,11 @@
                 <button id="next-button" class="btn btn-info">></button>
               </div>
               <div id="intermediate-graph"></div>
+              <div class="col-lg-12">
+                <p>parity check matrix: </p>
+                <pre id="intermediate-matrix"></pre>
+              </div>
+              <p>note: double-click on a node to expand a subgraph</p>
             </div>
           </div>
         </div>
